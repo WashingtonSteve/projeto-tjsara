@@ -6,6 +6,7 @@ use App\Domain\Task\Exceptions\TaskNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -18,6 +19,13 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        // This is an API-only application: every response under /api must be
+        // JSON, even when the client omits "Accept: application/json" or hits
+        // a route that doesn't exist (which never reaches route middleware).
+        $exceptions->shouldRenderJsonWhen(function (Request $request) {
+            return $request->is('api/*');
+        });
+
         $exceptions->render(function (TaskNotFoundException $e) {
             return response()->json(['message' => $e->getMessage()], 404);
         });
