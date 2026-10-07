@@ -28,6 +28,20 @@ test('it creates a task', function () {
     ]);
 });
 
+test('it responds with JSON even when the client sends no Accept header', function () {
+    $response = $this->post('/api/tasks', []);
+
+    $response->assertStatus(422)
+        ->assertJson(fn ($json) => $json->has('message')->etc());
+});
+
+test('it responds with JSON for an unmatched api route', function () {
+    $response = $this->get('/api/this-route-does-not-exist');
+
+    $response->assertStatus(404)
+        ->assertJson(fn ($json) => $json->has('message')->etc());
+});
+
 test('it rejects a task with a missing title', function () {
     $response = $this->postJson('/api/tasks', [
         'description' => 'No title provided',
