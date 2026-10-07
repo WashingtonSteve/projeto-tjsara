@@ -120,8 +120,8 @@ Beyond the original `Task` CRUD, the domain was deepened rather than widened —
 ## Getting started
 
 ```bash
-git clone https://github.com/WashingtonSteve/Portifolio.git
-cd Portifolio
+git clone https://github.com/WashingtonSteve/projeto-tjsara.git
+cd projeto-tjsara
 
 composer install
 
