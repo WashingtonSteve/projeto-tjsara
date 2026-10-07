@@ -95,8 +95,8 @@ Swapping persistence (an in-memory store for tests, a different ORM, a remote AP
 ## Getting started
 
 ```bash
-git clone https://github.com/WashingtonSteve/Portifolio.git
-cd Portifolio
+git clone https://github.com/WashingtonSteve/projeto-tjsara.git
+cd projeto-tjsara
 
 composer install
 
