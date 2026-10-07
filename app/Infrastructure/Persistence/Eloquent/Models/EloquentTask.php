@@ -8,6 +8,8 @@ use App\Domain\Task\Enums\TaskStatus;
 use Database\Factories\EloquentTaskFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -48,5 +50,21 @@ final class EloquentTask extends Model
     protected static function newFactory(): EloquentTaskFactory
     {
         return EloquentTaskFactory::new();
+    }
+
+    /**
+     * @return HasMany<EloquentSubtask, $this>
+     */
+    public function subtasks(): HasMany
+    {
+        return $this->hasMany(EloquentSubtask::class, 'task_id');
+    }
+
+    /**
+     * @return BelongsToMany<EloquentTag, $this>
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(EloquentTag::class, 'task_tag', 'task_id', 'tag_id');
     }
 }

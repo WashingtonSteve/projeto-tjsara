@@ -1,7 +1,11 @@
 <?php
 
+use App\Domain\Tag\Exceptions\InvalidTagDataException;
 use App\Domain\Task\Exceptions\InvalidTaskDataException;
+use App\Domain\Task\Exceptions\SubtaskNotFoundException;
+use App\Domain\Task\Exceptions\TagNotAttachedException;
 use App\Domain\Task\Exceptions\TaskAlreadyCompletedException;
+use App\Domain\Task\Exceptions\TaskHasPendingSubtasksException;
 use App\Domain\Task\Exceptions\TaskNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -30,11 +34,27 @@ return Application::configure(basePath: dirname(__DIR__))
             return response()->json(['message' => $e->getMessage()], 404);
         });
 
+        $exceptions->render(function (SubtaskNotFoundException $e) {
+            return response()->json(['message' => $e->getMessage()], 404);
+        });
+
         $exceptions->render(function (TaskAlreadyCompletedException $e) {
             return response()->json(['message' => $e->getMessage()], 409);
         });
 
+        $exceptions->render(function (TaskHasPendingSubtasksException $e) {
+            return response()->json(['message' => $e->getMessage()], 409);
+        });
+
+        $exceptions->render(function (TagNotAttachedException $e) {
+            return response()->json(['message' => $e->getMessage()], 404);
+        });
+
         $exceptions->render(function (InvalidTaskDataException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        });
+
+        $exceptions->render(function (InvalidTagDataException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         });
     })->create();

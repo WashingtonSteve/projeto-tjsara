@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fakes;
 
+use App\Domain\Task\Entities\Subtask;
 use App\Domain\Task\Entities\Task;
 use App\Domain\Task\Repositories\TaskRepositoryInterface;
 
@@ -20,6 +21,8 @@ final class InMemoryTaskRepository implements TaskRepositoryInterface
 
     private int $nextId = 1;
 
+    private int $nextSubtaskId = 1;
+
     /**
      * @return list<Task>
      */
@@ -35,25 +38,28 @@ final class InMemoryTaskRepository implements TaskRepositoryInterface
 
     public function save(Task $task): Task
     {
-        if ($task->id() === null) {
-            $persisted = Task::reconstitute(
-                id: $this->nextId++,
-                title: $task->title(),
-                description: $task->description(),
-                dueDate: $task->dueDate(),
-                status: $task->status(),
-                createdAt: $task->createdAt(),
-                updatedAt: $task->updatedAt(),
-            );
+        $id = $task->id() ?? $this->nextId++;
 
-            $this->tasks[$persisted->id()] = $persisted;
+        $persisted = Task::reconstitute(
+            id: $id,
+            title: $task->title(),
+            description: $task->description(),
+            dueDate: $task->dueDate(),
+            status: $task->status(),
+            createdAt: $task->createdAt(),
+            updatedAt: $task->updatedAt(),
+            subtasks: array_map(
+                fn (Subtask $subtask): Subtask => $subtask->id() !== null
+                    ? $subtask
+                    : Subtask::reconstitute($this->nextSubtaskId++, $subtask->title(), $subtask->isCompleted()),
+                $task->subtasks(),
+            ),
+            tags: $task->tags(),
+        );
 
-            return $persisted;
-        }
+        $this->tasks[$id] = $persisted;
 
-        $this->tasks[$task->id()] = $task;
-
-        return $task;
+        return $persisted;
     }
 
     public function delete(int $id): void

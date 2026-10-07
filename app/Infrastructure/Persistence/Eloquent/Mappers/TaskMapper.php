@@ -21,6 +21,8 @@ final class TaskMapper
             status: $model->status,
             createdAt: DateTimeImmutable::createFromInterface($model->created_at),
             updatedAt: DateTimeImmutable::createFromInterface($model->updated_at),
+            subtasks: array_values($model->subtasks->map(SubtaskMapper::toDomain(...))->all()),
+            tags: array_values($model->tags->map(TagMapper::toDomain(...))->all()),
         );
     }
 

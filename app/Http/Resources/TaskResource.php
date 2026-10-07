@@ -26,6 +26,8 @@ final class TaskResource extends JsonResource
             'description' => $task->description(),
             'due_date' => $task->dueDate()?->format('Y-m-d'),
             'status' => $task->status()->value,
+            'subtasks' => SubtaskResource::collection($task->subtasks()),
+            'tags' => TagResource::collection($task->tags()),
             'created_at' => $task->createdAt()->format(DateTimeInterface::ATOM),
             'updated_at' => $task->updatedAt()->format(DateTimeInterface::ATOM),
         ];

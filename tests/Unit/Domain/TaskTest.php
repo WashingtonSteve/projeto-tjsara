@@ -2,10 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Domain\Tag\Entities\Tag;
+use App\Domain\Task\Entities\Subtask;
 use App\Domain\Task\Entities\Task;
 use App\Domain\Task\Enums\TaskStatus;
 use App\Domain\Task\Exceptions\InvalidTaskDataException;
+use App\Domain\Task\Exceptions\SubtaskNotFoundException;
+use App\Domain\Task\Exceptions\TagNotAttachedException;
 use App\Domain\Task\Exceptions\TaskAlreadyCompletedException;
+use App\Domain\Task\Exceptions\TaskHasPendingSubtasksException;
 
 test('create builds a pending task with the given data', function () {
     $dueDate = new DateTimeImmutable('+1 week');
@@ -87,6 +92,130 @@ test('complete throws when the task is already completed', function () {
 
     $task->complete();
 })->throws(TaskAlreadyCompletedException::class);
+
+test('addSubtask appends a pending subtask and returns it', function () {
+    $task = Task::create('Plan the trip', null, null);
+
+    $subtask = $task->addSubtask('Book flights');
+
+    expect($subtask->title())->toBe('Book flights')
+        ->and($subtask->isCompleted())->toBeFalse()
+        ->and($task->subtasks())->toHaveCount(1);
+});
+
+test('completeSubtask marks the matching subtask as completed', function () {
+    $task = Task::reconstitute(
+        id: 1,
+        title: 'Plan the trip',
+        description: null,
+        dueDate: null,
+        status: TaskStatus::Pending,
+        createdAt: new DateTimeImmutable,
+        updatedAt: new DateTimeImmutable,
+        subtasks: [Subtask::reconstitute(1, 'Book flights', false)],
+    );
+
+    $task->completeSubtask(1);
+
+    expect($task->subtasks()[0]->isCompleted())->toBeTrue();
+});
+
+test('completeSubtask throws SubtaskNotFoundException for an unknown id', function () {
+    $task = Task::create('Plan the trip', null, null);
+
+    $task->completeSubtask(999);
+})->throws(SubtaskNotFoundException::class, 'Subtask with ID [999] was not found.');
+
+test('removeSubtask drops the matching subtask', function () {
+    $task = Task::reconstitute(
+        id: 1,
+        title: 'Plan the trip',
+        description: null,
+        dueDate: null,
+        status: TaskStatus::Pending,
+        createdAt: new DateTimeImmutable,
+        updatedAt: new DateTimeImmutable,
+        subtasks: [Subtask::reconstitute(1, 'Book flights', false)],
+    );
+
+    $task->removeSubtask(1);
+
+    expect($task->subtasks())->toBeEmpty();
+});
+
+test('removeSubtask throws SubtaskNotFoundException for an unknown id', function () {
+    $task = Task::create('Plan the trip', null, null);
+
+    $task->removeSubtask(999);
+})->throws(SubtaskNotFoundException::class);
+
+test('complete throws TaskHasPendingSubtasksException when a subtask is still pending', function () {
+    $task = Task::reconstitute(
+        id: 1,
+        title: 'Plan the trip',
+        description: null,
+        dueDate: null,
+        status: TaskStatus::Pending,
+        createdAt: new DateTimeImmutable,
+        updatedAt: new DateTimeImmutable,
+        subtasks: [Subtask::reconstitute(1, 'Book flights', false)],
+    );
+
+    $task->complete();
+})->throws(TaskHasPendingSubtasksException::class, 'Task with ID [1] has pending subtasks and cannot be completed.');
+
+test('complete succeeds when every subtask is already completed', function () {
+    $task = Task::reconstitute(
+        id: 1,
+        title: 'Plan the trip',
+        description: null,
+        dueDate: null,
+        status: TaskStatus::Pending,
+        createdAt: new DateTimeImmutable,
+        updatedAt: new DateTimeImmutable,
+        subtasks: [Subtask::reconstitute(1, 'Book flights', true)],
+    );
+
+    $task->complete();
+
+    expect($task->isCompleted())->toBeTrue();
+});
+
+test('attachTag adds a tag to the task', function () {
+    $task = Task::create('Plan the trip', null, null);
+    $tag = Tag::reconstitute(1, 'urgent');
+
+    $task->attachTag($tag);
+
+    expect($task->tags())->toHaveCount(1)
+        ->and($task->hasTag(1))->toBeTrue();
+});
+
+test('attachTag is idempotent for an already-attached tag', function () {
+    $task = Task::create('Plan the trip', null, null);
+    $tag = Tag::reconstitute(1, 'urgent');
+
+    $task->attachTag($tag);
+    $task->attachTag($tag);
+
+    expect($task->tags())->toHaveCount(1);
+});
+
+test('detachTag removes a previously attached tag', function () {
+    $task = Task::create('Plan the trip', null, null);
+    $task->attachTag(Tag::reconstitute(1, 'urgent'));
+
+    $task->detachTag(1);
+
+    expect($task->tags())->toBeEmpty()
+        ->and($task->hasTag(1))->toBeFalse();
+});
+
+test('detachTag throws TagNotAttachedException when the tag is not attached', function () {
+    $task = Task::create('Plan the trip', null, null);
+
+    $task->detachTag(999);
+})->throws(TagNotAttachedException::class, 'Tag with ID [999] is not attached to this task.');
 
 test('reconstitute rebuilds a task from trusted persisted state without revalidating', function () {
     $dueDate = new DateTimeImmutable('-10 days');

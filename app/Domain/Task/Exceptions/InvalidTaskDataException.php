@@ -20,4 +20,14 @@ final class InvalidTaskDataException extends \DomainException
     {
         return new self('Task due date must not be in the past.');
     }
+
+    public static function emptySubtaskTitle(): self
+    {
+        return new self('Subtask title must not be empty.');
+    }
+
+    public static function subtaskTitleTooLong(int $max): self
+    {
+        return new self("Subtask title must not exceed {$max} characters.");
+    }
 }
