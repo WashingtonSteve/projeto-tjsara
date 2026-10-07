@@ -19,6 +19,10 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap any application services.
+     *
+     * Event listeners (e.g. App\Listeners\LogTaskCompletion) are picked up
+     * automatically by Laravel's event auto-discovery from their handle()
+     * method's type-hint - no explicit Event::listen() needed.
      */
     public function boot(): void
     {

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\Api\AuthTokenController;
 use App\Http\Controllers\Api\SubtaskController;
 use App\Http\Controllers\Api\TagController;
@@ -16,6 +17,8 @@ Route::post('/auth/token', [AuthTokenController::class, 'store'])
 Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::delete('/auth/token', [AuthTokenController::class, 'destroy'])->name('auth.token.destroy');
 
+    Route::get('/activity', [ActivityLogController::class, 'index'])->name('activity.index');
+
     Route::prefix('tags')->group(function () {
         Route::get('/', [TagController::class, 'index'])->name('tags.index');
         Route::post('/', [TagController::class, 'store'])->name('tags.store');
@@ -23,7 +26,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
 
     Route::prefix('tasks')->group(function () {
         Route::get('/', [TaskController::class, 'index'])->name('tasks.index');
-        Route::post('/', [TaskController::class, 'store'])->name('tasks.store');
+        Route::post('/', [TaskController::class, 'store'])->middleware('idempotent')->name('tasks.store');
         Route::get('/{task}', [TaskController::class, 'show'])->whereNumber('task')->name('tasks.show');
         Route::put('/{task}', [TaskController::class, 'update'])->whereNumber('task')->name('tasks.update');
         Route::delete('/{task}', [TaskController::class, 'destroy'])->whereNumber('task')->name('tasks.destroy');
