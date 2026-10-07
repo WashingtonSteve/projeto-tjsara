@@ -1,0 +1,52 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Infrastructure\Persistence\Eloquent\Models;
+
+use App\Domain\Task\Enums\TaskStatus;
+use Database\Factories\EloquentTaskFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
+
+/**
+ * @property int $id
+ * @property string $title
+ * @property string|null $description
+ * @property Carbon|null $due_date
+ * @property TaskStatus $status
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ */
+final class EloquentTask extends Model
+{
+    /** @use HasFactory<EloquentTaskFactory> */
+    use HasFactory;
+
+    protected $table = 'tasks';
+
+    /** @var list<string> */
+    protected $fillable = [
+        'title',
+        'description',
+        'due_date',
+        'status',
+    ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'due_date' => 'date',
+            'status' => TaskStatus::class,
+        ];
+    }
+
+    protected static function newFactory(): EloquentTaskFactory
+    {
+        return EloquentTaskFactory::new();
+    }
+}

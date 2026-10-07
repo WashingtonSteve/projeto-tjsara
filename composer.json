@@ -1,0 +1,77 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "washingtonsteve/task-management-api",
+    "type": "project",
+    "description": "A Laravel 11 Task Management API built around Clean Architecture: domain, application, infrastructure and presentation layers kept independently testable.",
+    "keywords": ["laravel", "clean-architecture", "ddd", "api", "portfolio"],
+    "license": "MIT",
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^11.31",
+        "laravel/tinker": "^2.9"
+    },
+    "require-dev": {
+        "fakerphp/faker": "^1.23",
+        "larastan/larastan": "^3.13",
+        "laravel/pint": "^1.13",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.1",
+        "pestphp/pest": "^3.8",
+        "pestphp/pest-plugin-laravel": "^3.2",
+        "phpunit/phpunit": "^11.0.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-create-project-cmd": [
+            "@php artisan key:generate --ansi",
+            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
+            "@php artisan migrate --graceful --ansi"
+        ],
+        "test": "pest",
+        "lint": "pint --test",
+        "format": "pint",
+        "analyse": "phpstan analyse"
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": []
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        },
+        "audit": {
+            "ignore": {
+                "GHSA-jh5r-qr3c-85q8": "Debug-page XSS only reachable with APP_DEBUG=true; production .env.example ships APP_DEBUG=false. No fix published yet for the Laravel 11 branch (laravel/framework ^11.0).",
+                "GHSA-crmm-hgp2-wgrp": "Signed URL path confusion fixed only on Laravel 12.61.1+/13.12.0+; no backport exists for the 11.x branch this project is pinned to.",
+                "GHSA-5vg9-5847-vvmq": "CRLF injection in the default email validation rule, fixed only on Laravel 12.60.0+/13.10.0+; no backport exists for the 11.x branch this project is pinned to.",
+                "PKSA-mdq4-51ck-6kdq": "Duplicate advisory record (CVE-2026-48019) for the same CRLF injection as GHSA-5vg9-5847-vvmq, fixed only on Laravel 12.60.0+/13.10.0+; no backport exists for the 11.x branch this project is pinned to."
+            }
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
