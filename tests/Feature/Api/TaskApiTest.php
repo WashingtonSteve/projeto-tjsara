@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 use App\Domain\Task\Enums\TaskStatus;
 use App\Infrastructure\Persistence\Eloquent\Models\EloquentTask;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
+
+beforeEach(fn () => Sanctum::actingAs(User::factory()->create()));
 
 test('it creates a task', function () {
     $response = $this->postJson('/api/tasks', [

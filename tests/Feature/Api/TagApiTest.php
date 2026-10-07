@@ -3,9 +3,13 @@
 declare(strict_types=1);
 
 use App\Infrastructure\Persistence\Eloquent\Models\EloquentTask;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
+
+beforeEach(fn () => Sanctum::actingAs(User::factory()->create()));
 
 test('it creates a tag', function () {
     $response = $this->postJson('/api/tags', ['name' => 'urgent']);
